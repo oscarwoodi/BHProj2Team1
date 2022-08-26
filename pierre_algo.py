@@ -11,25 +11,28 @@ def gradients_fct(data, window):
 
     return gradients, second_gradients, SMA
 
-def buy(flag, sigPriceBuy, sigPriceSell):
-    flag = 1
+def buy(sigPriceBuy, sigPriceSell, flag=1):
+    flag += 1
     sigPriceBuy.append('BUY')
     sigPriceSell.append(0)
-    return flag, sigPriceBuy, sigPriceSell
+    return sigPriceBuy, sigPriceSell, flag
 
 
-def sell(flag, sigPriceBuy, sigPriceSell):
-    flag = -1
+def sell(sigPriceBuy, sigPriceSell, flag=-1):
+    flag += -1
     sigPriceBuy.append(0)
     sigPriceSell.append('SELL')
-    return flag, sigPriceBuy, sigPriceSell
+    return sigPriceBuy, sigPriceSell, flag
+
+def update_short_price():
+    pass
+
+def update_long_price():
+    pass
 
 def inflexion_primary(data, window):
 
     gradients, second_gradients,SMA = gradients_fct(data,window)
-
-    #PARAMETERS
-    #flag = 1: long position, flag = -1: short position, flag = 0: no position
 
     sigPriceBuy = []
     sigPriceSell = []
@@ -50,21 +53,13 @@ def inflexion_primary(data, window):
             #From nothing to long
             if flag == 0:
                 price_bought_at = data[i]
-                buy(flag, sigPriceBuy, sigPriceSell)
+                buy(sigPriceBuy, sigPriceSell, flag)
 
             #From short to a long
-            elif flag == -1:
+            elif flag <= -1 :
                 profit += price_short_at - data[i]
                 price_bought_at = data[i]
-                buy(flag, sigPriceBuy, sigPriceSell)
-
-            #from long to more long
-            elif flag == 1:
-                inflexion_secondary(data, gradients, second_gradients,
-                                    sigPriceBuy, SMA, sigPriceSell, profit,
-                                    flag_status, daily_profit)
-
-                pass
+                buy(sigPriceBuy, sigPriceSell, flag)
 
         # TAKING A SHORT POSITION
         elif gradients[i] < 0 and gradients[i - 1] >= 0:
@@ -72,20 +67,20 @@ def inflexion_primary(data, window):
             #from nothing to a short
             if flag == 0:
                 price_short_at = data[i]
-                sell(flag, sigPriceBuy, sigPriceSell)
+                sell(sigPriceBuy, sigPriceSell, flag)
 
             #from long to a short
-            elif flag == 1:
+            elif flag >= 1:
                 profit += data[i] - price_bought_at
                 price_short_at = data[i]
-                sell(flag, sigPriceBuy, sigPriceSell)
+                sell(sigPriceBuy, sigPriceSell, flag)
 
             #from short to more short
-            elif flag == -1:
-                inflexion_secondary(data, gradients, second_gradients,
+        elif flag <= -1 or flag >= 1:
+            inflexion_secondary(i, data, gradients, second_gradients,
                                     sigPriceBuy, SMA, sigPriceSell, profit,
                                     flag_status, daily_profit)
-                pass
+            pass
 
         else:
             sigPriceBuy.append(0)
@@ -93,25 +88,31 @@ def inflexion_primary(data, window):
 
     return gradients, second_gradients, sigPriceBuy,SMA, sigPriceSell, profit, flag_status, daily_profit
 
-def inflexion_secondary(data, gradients, second_gradients, sigPriceBuy, SMA, sigPriceSell, profit, flag_status, daily_profit):
+def inflexion_secondary(i, data, gradients, second_gradients, sigPriceBuy, SMA, sigPriceSell, profit, flag_status, daily_profit):
+    #buy more long or begin to sell short
+    if ((second_gradients[i] > 0 and gradients[i - 1] > 0 and gradients[i] > 0)
+        or (second_gradients[i] > 0 and gradients[i - 1] < 0 and gradients[i] < 0)):
 
-    for i in range(len(data)):
-        if second_gradients[i] > 0 and gradients[i - 1] > 0 and gradients[i] > 0:
-            sigPriceBuy.append('BUY')
-            sigPriceSell.append(0)
-            pass
+        price_bought_at = data[i]
+        buy(sigPriceBuy, sigPriceSell)
+        sigPriceBuy.append('BUY')
+        sigPriceSell.append(0)
+        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit
 
-        elif second_gradients[i] < 0 and gradients[i - 1] < 0 and gradients[i] < 0:
-            sigPriceBuy.append(0)
-            sigPriceSell.append('SELL')
+    #sell more short or begin to sell long
+    elif ((second_gradients[i] < 0 and gradients[i - 1] < 0 and gradients[i] < 0) or
+        (second_gradients[i] < 0 and gradients[i - 1] > 0 and gradients[i] > 0)):
 
-        else:
-            sigPriceBuy.append(0)
-            sigPriceSell.append(0)
+        price_short_at = data[i]
+        sell(sigPriceBuy, sigPriceSell)
+        sigPriceBuy.append(0)
+        sigPriceSell.append('SELL')
+        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit
 
-        pass
-
-    return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit
+    else:
+        sigPriceBuy.append(0)
+        sigPriceSell.append(0)
+        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit
 
 
 def position_array(data, flag_status, daily_profit):
