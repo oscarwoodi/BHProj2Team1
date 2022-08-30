@@ -213,7 +213,8 @@ def algo_call(series, window):
     #print(type(data_test_bed))
 
     profit,table = table_generation(df, window)
-    print('the profit is'+str(profit))
+    print('the profit is'+str(profit*100000))
+
     return profit, table
 
 # write to excel
