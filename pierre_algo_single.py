@@ -208,5 +208,5 @@ def to_excel(trades):
     workbook.save(filename="Data/Test Bed.xlsm")
 
 if __name__ == '__main__':
-    profit,table, sigPriceBuy, sigPriceSell= algo_call_fct(13,15)
+    profit,table, sigPriceBuy, sigPriceSell= algo_call_fct(13,10)
     to_excel(table)
