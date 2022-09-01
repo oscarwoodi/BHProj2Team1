@@ -82,85 +82,39 @@ def inflexion_primary(data, window):
         if gradients[i] > 0 and gradients[i-1] <= 0:
 
             #From nothing to long
-            if flag == 0:
+            if flag == 0 and flag<5:
                 profit, price_bought_at, price_short_at, i, data, sigPriceBuy, sigPriceSell, flag = buy(
                     profit, price_bought_at, price_short_at,i, data, sigPriceBuy,
                     sigPriceSell, flag)
 
             #From short to a long
-            elif flag <= -1 :
+            elif flag <= -1 and flag < 5:
                 profit, price_bought_at, price_short_at, i, data, sigPriceBuy, sigPriceSell, flag = buy(
                     profit, price_bought_at, price_short_at, i, data, sigPriceBuy,
                     sigPriceSell, flag)
-            elif flag >0 :
-                sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag = inflexion_secondary(
-                    i, data, gradients, second_gradients, sigPriceBuy, SMA,
-                    sigPriceSell, profit, flag_status, daily_profit,
-                    price_short_at, price_bought_at, flag)
 
         # TAKING A SHORT POSITION
         elif gradients[i] < 0 and gradients[i-1] >= 0:
 
             #from nothing to a short
-            if flag == 0:
+            if flag == 0 and flag>-5:
                 profit, i, price_bought_at, price_short_at, data, sigPriceBuy, sigPriceSell, flag = sell(
                     profit, i, price_bought_at, price_short_at, data, sigPriceBuy,
                     sigPriceSell, flag)
 
             #from long to a short
-            elif flag >= 1:
+            elif flag >= 1 and flag>-5:
                 profit, i, price_bought_at, price_short_at, data, sigPriceBuy, sigPriceSell, flag = sell(
                     profit, i, price_bought_at, price_short_at, data, sigPriceBuy,
                     sigPriceSell, flag)
-            elif flag <0:
-
-                sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag = inflexion_secondary(
-                    i, data, gradients, second_gradients, sigPriceBuy, SMA,
-                    sigPriceSell, profit, flag_status, daily_profit,
-                    price_short_at, price_bought_at, flag)
 
             #from short to more short
-        elif flag <= -1 or flag >= 1:
-            sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag = inflexion_secondary(
-                i, data, gradients, second_gradients, sigPriceBuy, SMA,
-                sigPriceSell, profit, flag_status, daily_profit,
-                price_short_at, price_bought_at, flag)
-
         else:
 
             sigPriceBuy.append(0)
             sigPriceSell.append(0)
 
     return gradients, second_gradients,SMA, sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit
-
-def inflexion_secondary(i, data, gradients, second_gradients, sigPriceBuy,
-                        SMA, sigPriceSell, profit, flag_status, daily_profit,
-                        price_short_at, price_bought_at, flag):
-
-    #buy more long or begin to sell short
-    if (((second_gradients[i] > 0 and gradients[i-1] >= 0 and gradients[i] > 0)
-        or (second_gradients[i] > 0 and gradients[i-1] <= 0 and gradients[i] < 0))and flag<5):
-
-        profit, price_bought_at, price_short_at, i, data, sigPriceBuy, sigPriceSell, flag = buy(
-            profit, price_bought_at, price_short_at, i, data, sigPriceBuy,
-            sigPriceSell, flag)
-
-        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag
-
-    #sell more short or begin to sell long
-    elif (((second_gradients[i] < 0 and gradients[i-1] <= 0 and gradients[i] < 0) or
-        (second_gradients[i] < 0 and gradients[i-1] >= 0 and gradients[i] > 0))and flag>-5):
-
-        profit, i, price_bought_at, price_short_at, data, sigPriceBuy, sigPriceSell, flag = sell(
-            profit, i, price_bought_at, price_short_at, data, sigPriceBuy,
-            sigPriceSell, flag)
-
-        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag
-
-    else:
-        sigPriceBuy.append(0)
-        sigPriceSell.append(0)
-        return sigPriceBuy, sigPriceSell, profit, flag_status, daily_profit, price_bought_at, price_short_at, flag
 
 
 def position_array(data, flag_status, daily_profit):
@@ -222,7 +176,7 @@ def table_generation(data, window):
 
 
 
-def algo_call(series, window):
+def algo_call_fct(series, window):
 
     data = pd.read_excel('Data/Time Series Data.xlsx', index_col='Day')
 
@@ -254,5 +208,5 @@ def to_excel(trades):
     workbook.save(filename="Data/Test Bed.xlsm")
 
 if __name__ == '__main__':
-    profit,table, sigPriceBuy, sigPriceSell= algo_call(13,15)
+    profit,table, sigPriceBuy, sigPriceSell= algo_call_fct(13,15)
     to_excel(table)
