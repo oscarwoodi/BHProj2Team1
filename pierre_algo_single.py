@@ -178,9 +178,9 @@ def table_generation(data, window):
 
 def algo_call_fct(series, window):
 
-    data = pd.read_excel('Data/Time Series Data.xlsx', index_col='Day')
+    #data = pd.read_excel("Test Bed V2.xlsm", index_col='Day')
 
-    #data = pd.read_excel('Data/Test Bed.xlsm',header = 1, usecols = ['Series 13'])
+    data = pd.read_excel('Test Bed V2.xlsm',header = 1, usecols = ['Series 13'])
 
     #df = pd.DataFrame(data_test_bed['Select series:']).iloc[1:, :]
     df = data['Series {}'.format(series)]
@@ -197,7 +197,7 @@ def algo_call_fct(series, window):
 #load excel file
 def to_excel(trades):
 
-    workbook = load_workbook(filename="Data/Test Bed.xlsm")
+    workbook = load_workbook(filename="Test Bed V2.xlsm")
     sheet = workbook.active
 
     sheet['AV1']=13
@@ -205,7 +205,7 @@ def to_excel(trades):
     for i in np.arange(4, trades.index[-2] + 2):
         edit = 'AU' + str(int(i))
         sheet[edit] = trades['TRADES'][i - 2]
-    workbook.save(filename="Data/Test Bed.xlsm")
+    workbook.save(filename="Test Bed V2.xlsm")
 
 if __name__ == '__main__':
     profit,table, sigPriceBuy, sigPriceSell= algo_call_fct(13,10)
